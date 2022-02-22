@@ -25,8 +25,11 @@ module Fluent
 
       def format(tag, time, record)
         log.debug("Record")
+        sd_array = []
         log.debug(record.map { |k, v| "#{k}=#{v}" }.join('&'))
-
+        @structured_data_field_array.each do |sd|
+          sd_array << RFC5424::StructuredData.new(sd_id: sd).to_s
+        end
         msg = RFC5424::Formatter.format(
           log: record.dig(*@log_field_array) || "-",
           timestamp: time,
@@ -34,7 +37,7 @@ module Fluent
           app_name: record.dig(*@app_name_field_array) || "-",
           proc_id: record.dig(*@proc_id_field_array) || "-",
           msg_id: record.dig(*@message_id_field_array) || "-",
-          sd: RFC5424::StructuredData.new(sd_id: record.dig(*@structured_data_field_array)).to_s || "-"
+          sd: get_structured_data(record)
         )
 
         log.debug("RFC 5424 Message")
@@ -43,6 +46,14 @@ module Fluent
         return msg + "\n" unless @rfc6587_message_size
 
         msg.length.to_s + ' ' + msg
+      end
+
+      def get_structured_data(record)
+        sd_array = []
+        @structured_data_field_array.each do |sd_field|
+          sd_array << RFC5424::StructuredData.new(sd_id: record.dig(sd_field) ).to_s if record.dig(sd_field)
+        end
+        return sd_array.empty? ? "-" : sd_array.join("")
       end
     end
   end
