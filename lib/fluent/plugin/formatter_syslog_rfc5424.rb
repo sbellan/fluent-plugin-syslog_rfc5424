@@ -26,6 +26,7 @@ module Fluent
       def format(tag, time, record)
         log.debug("Record")
         log.debug(record.map { |k, v| "#{k}=#{v}" }.join('&'))
+
         msg = RFC5424::Formatter.format(
           log: record.dig(*@log_field_array) || "-",
           timestamp: time,
