@@ -33,7 +33,7 @@ module Fluent
           app_name: record.dig(*@app_name_field_array) || "-",
           proc_id: record.dig(*@proc_id_field_array) || "-",
           msg_id: record.dig(*@message_id_field_array) || "-",
-          sd: get_structured_data(record)
+          sd: parse_structured_data(record)
         )
 
         log.debug("RFC 5424 Message")
@@ -44,10 +44,10 @@ module Fluent
         msg.length.to_s + ' ' + msg
       end
 
-      def get_structured_data(record)
+      def parse_structured_data(record)
         sd_array = []
         @structured_data_field_array.each do |sd_field|
-          sd_array << RFC5424::StructuredData.new(sd_id: record.dig(sd_field) ).to_s if record.dig(sd_field)
+          sd_array << RFC5424::StructuredData.new(sd_id: record.dig(sd_field)).to_s if record.dig(sd_field)
         end
         return sd_array.empty? ? '-' : sd_array.join('')
       end
