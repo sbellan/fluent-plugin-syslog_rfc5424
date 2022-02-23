@@ -34,7 +34,7 @@ module Fluent
           app_name: record.dig(*@app_name_field_array) || "-",
           proc_id: record.dig(*@proc_id_field_array) || "-",
           msg_id: record.dig(*@message_id_field_array) || "-",
-          sd: record.dig(*@structured_data_field_array) || "-"
+          sd: parse_structured_data(record)
         )
 
         log.debug("RFC 5424 Message")
@@ -43,6 +43,14 @@ module Fluent
         return msg + "\n" unless @rfc6587_message_size
 
         msg.length.to_s + ' ' + msg
+      end
+
+      def parse_structured_data(record)
+        sd_array = []
+        @structured_data_field_array.each do |sd_field|
+          sd_array << RFC5424::StructuredData.new(sd_id: record.dig(sd_field)).to_s if record.dig(sd_field)
+        end
+        return sd_array.empty? ? '-' : sd_array.join('')
       end
     end
   end
