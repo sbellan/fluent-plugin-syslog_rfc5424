@@ -48,7 +48,7 @@ module Fluent
       def parse_structured_data(record)
         sd_array = []
         @structured_data_field_array.each do |sd_field|
-          sd_array << RFC5424::StructuredData.new(sd_id: record.dig(sd_field)).to_s if record.dig(sd_field)
+          sd_array << RFC5424::StructuredData.new(sd_id: sd_field , sd_elements: record.dig(sd_field)).to_s if record.dig(sd_field)
         end
         return sd_array.empty? ? '-' : sd_array.join('')
       end
